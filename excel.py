@@ -36,16 +36,24 @@ class ExcelFile:
             else:
                 return
 
-    def write_circulations(self, data: tuple):
+    def write_data(self, data: tuple, table: str):
         """
         write to excel circulations
         :param data: number_of_circl + tuple a numbers
         :return:
         """
+        self.wb[table].insert_rows(13, len(data))
+        row, column = 13, 1
         for circulation in data:
-            temp_circulation = tuple(map(lambda x: int(x), circulation[1]))
-            self.wb['Архив'].append((int(circulation[0]), *temp_circulation, sum(temp_circulation)))
+            column = 1
+            for value in (circulation + (sum(circulation[1:]), )):
+                self.wb[table].cell(row, column, value)
+                column += 1
+            row += 1
         self.save()
+
+    def calculate(self, data):
+        pass
 
 
 def main():
