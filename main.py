@@ -3,10 +3,13 @@ import requests
 import constants
 import re
 import excel
-import numpy as np
+
+
+file = excel.ExcelFile()
 
 
 def parse_every_page(needed: int):
+    file.clear_filter()
     page = 1
     data = constants.DATA.copy()
     circulations = []
@@ -20,13 +23,11 @@ def parse_every_page(needed: int):
             return
 
         html = html.text
-        circulations.append(statistics(html))
+        circulations += tuple(map(lambda numbers: sum(numbers[1:]), statistics(html)))
         needed -= len(re.findall(r'>\d{6}', html))
         page += 1
         print('Время парса одной страницы -', datetime.now() - start)
-    # for i in circulations:
-    #     print(i)
-    # print(len(circulations))
+    file.write_statistics(tuple(circulations))
 
 
 def get_circulations(html) -> tuple:
@@ -48,7 +49,6 @@ def statistics(html: str) -> tuple:
     :param html:
     :return:
     """
-    file = excel.ExcelFile()
     circulations = get_circulations(html)
     file.write_data(circulations, 'Отфильтрованные записи')
     return circulations
@@ -61,10 +61,10 @@ def every_parsing():
     if not html.ok:
         return
 
-    excel.ExcelFile().write_data(get_circulations(html.text), 'Архив')
+    file.write_data(get_circulations(html.text), 'Архив')
 
 
 if __name__ == '__main__':
-    parse_every_page(500)
-    # every_parsing()
+    # parse_every_page(500)
+    every_parsing()
 
