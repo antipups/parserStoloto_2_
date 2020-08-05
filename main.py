@@ -27,7 +27,7 @@ def parse_every_page(needed: int):
         needed -= len(re.findall(r'>\d{6}', html))
         page += 1
         print('Время парса одной страницы -', datetime.now() - start)
-    file.write_statistics(tuple(circulations))
+    file.write_statistics(tuple(circulations), 'Отфильтрованные записи')
 
 
 def get_circulations(html) -> tuple:
@@ -61,10 +61,10 @@ def every_parsing():
     if not html.ok:
         return
 
-    file.write_data(get_circulations(html.text), 'Архив')
+    file.write_data(get_circulations(html.text)[0], 'Архив')
 
 
 if __name__ == '__main__':
-    # parse_every_page(500)
+    # parse_every_page(200)
     every_parsing()
 

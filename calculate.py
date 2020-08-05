@@ -4,7 +4,7 @@ import constants
 
 class Calculator:
 
-    def __init__(self, data):
+    def __init__(self, data: tuple):
         self.data = data
         self.first_task()
         self.second_task()
@@ -36,9 +36,12 @@ class Calculator:
                         self.fourth_dict_answer[key].append(length_of_seq)
 
         for key, value in self.second_dict_answer.items():
-            self.second_dict_answer[key] = round(sum(self.second_dict_answer[key]) / len(self.second_dict_answer[key]), 2)
-            self.third_dict_answer[key] = round(sum(self.third_dict_answer[key]) / len(self.third_dict_answer[key]), 2)
-            self.fourth_dict_answer[key] = round(sum(self.fourth_dict_answer[key]) / len(self.fourth_dict_answer[key]), 2)
+            if len(self.second_dict_answer[key]) > 0:
+                self.second_dict_answer[key] = round(sum(self.second_dict_answer[key]) / len(self.second_dict_answer[key]), 2)
+            if len(self.third_dict_answer[key]) > 0:
+                self.third_dict_answer[key] = round(sum(self.third_dict_answer[key]) / len(self.third_dict_answer[key]), 2)
+            if len(self.fourth_dict_answer[key]) > 0:
+                self.fourth_dict_answer[key] = round(sum(self.fourth_dict_answer[key]) / len(self.fourth_dict_answer[key]), 2)
 
 
 if __name__ == '__main__':

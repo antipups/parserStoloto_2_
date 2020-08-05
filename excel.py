@@ -26,7 +26,7 @@ class ExcelFile:
                         cell.alignment = Alignment(wrapText=True, horizontal='center')
                         self.cell_decorate(cell, color, {'size': 10})
 
-                for _ in range(3):
+                for _ in range(4):
                     wb[name].append(('',))
 
                 wb[name].append(('Тираж', *(x for x in range(1, 13)), 'Сумма'))
@@ -52,22 +52,21 @@ class ExcelFile:
         :return:
         """
         if table == 'Архив':
-            self.wb[table].insert_rows(13, len(data))
+            if self.wb[table].cell(13, 1).value == data[0]:
+                return
+
+            self.wb[table].insert_rows(13, 1)
             row, column = 13, 1
-
-            for circulation in data:
-                column = 1
-                for value in (circulation + (sum(circulation[1:]),)):
-                    self.wb[table].cell(row, column, value)
-                    column += 1
-                row += 1
-
+            for value in (data + (sum(data[1:]),)):
+                self.wb[table].cell(row, column, value)
+                column += 1
+            self.read_old_static()
         else:
             for circulation in data:
                 self.wb[table].append(circulation + (sum(circulation[1:]),))
         self.save()
 
-    def write_statistics(self, data: tuple):
+    def write_statistics(self, data: tuple, table: str):
         calc = calculate.Calculator(data)
         for index, (first, second, third, fourth, color) in enumerate(zip(calc.first_dict_answer.values(),
                                                                           calc.second_dict_answer.values(),
@@ -76,8 +75,10 @@ class ExcelFile:
                                                                           COLORS),
                                                                       start=1):
 
-            for row in (2, 4, 6, 8):
-                self.cell_decorate(self.wb['Отфильтрованные записи'].cell(row, index, fourth), color)
+            for row, price in zip((2, 4, 6, 8), (first, second, third, fourth)):
+                if not price:
+                    continue
+                self.cell_decorate(self.wb[table].cell(row, index, price), color)
 
         self.save()
 
@@ -88,6 +89,14 @@ class ExcelFile:
 
     def clear_filter(self):
         self.wb['Отфильтрованные записи'].delete_rows(13, 5000)
+
+    def read_old_static(self):
+        row = 13
+        sums = []
+        while self.wb['Архив'].cell(row, 14).value:
+            sums.append(self.wb['Архив'].cell(row, 14).value)
+            row += 1
+        self.write_statistics(tuple(sums), 'Архив')
 
 
 def main():
