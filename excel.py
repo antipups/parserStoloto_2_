@@ -10,36 +10,35 @@ import calculate
 class ExcelFile:
 
     def __init__(self):
-        self.wb = self.create_file(False)
+        self.create_file(False)
         self.save()
 
-    def create_file(self, new: bool) -> Workbook:
+    def create_file(self, new: bool):
         if new:
             if path.exists(path.abspath(RESULT_FILE_NAME)):
                 remove(path.abspath(RESULT_FILE_NAME))
         elif path.exists(path.abspath(RESULT_FILE_NAME)):
             try:
-                wb = load_workbook(path.abspath(RESULT_FILE_NAME))
-                return wb
+                self.wb = load_workbook(path.abspath(RESULT_FILE_NAME))
+                return
             except zipfile.BadZipFile:
                 print('Файл поврежден, пересоздаю файл')
 
-        wb = Workbook()
+        self.wb = Workbook()
         for name in ('Архив', 'Отфильтрованные записи'):
-            wb.create_sheet(name)
+            self.wb.create_sheet(name)
 
             for row in range(1, 8, 2):
                 for column, (name_col, color) in enumerate(zip(tuple(DICT_OF_NAME_COLUMNS.get(row) + title for title in COLUMNS), COLORS), start=1):
-                    cell = wb[name].cell(row, column, name_col)
+                    cell = self.wb[name].cell(row, column, name_col)
                     cell.alignment = Alignment(wrapText=True, horizontal='center')
                     self.cell_decorate(cell, color, {'size': 10})
 
             for _ in range(4):
-                wb[name].append(('',))
+                self.wb[name].append(('',))
 
-            wb[name].append(('Тираж', *(x for x in range(1, 13)), 'Сумма'))
-        wb.remove(wb['Sheet'])
-        return wb
+            self.wb[name].append(('Тираж', *(x for x in range(1, 13)), 'Сумма'))
+        self.wb.remove(self.wb['Sheet'])
 
     def save(self):
         while True:

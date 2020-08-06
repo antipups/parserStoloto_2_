@@ -1,23 +1,11 @@
 import threading
-from time import sleep
 from tkinter import *
-from main import get_static, parse_every_page, every_parsing
-
-
-autoupdate = True
-
-
-def timer():
-    print('sexix')
-    while autoupdate:
-        every_parsing()
-        sleep(60)
+from main import get_static, parse_every_page, start_thread
 
 
 class MyApp(Tk):
     def __init__(self):
         super().__init__()
-        threading.Thread(target=timer, daemon=True).start()
         self.create_widgets()
 
     def create_widgets(self):
@@ -27,14 +15,25 @@ class MyApp(Tk):
         label = Label(text='', font=('Ubuntu', 15))
 
         def parse(event):
-            global autoupdate
-            autoupdate = False
             label['text'] = '0%'
-            threading.Thread(target=parse_every_page, args=(5000, label, self.ls_of_buttons)).start()
             self.disable_all()
+            threading.Thread(target=parse_every_page, args=(5000, label, self.ls_of_buttons)).start()
 
         btn.bind('<Button-1>', parse)
         btn.grid(row=0, columnspan=4)
+
+        btn = Button(text='Автообновление: ВЫКЛ',
+                     command=start_thread)
+
+        def change_text(event):
+            if event.widget.cget('text').find('ВЫКЛ') > -1:
+                event.widget['text'] = 'Автообновление: ВКЛ'
+            else:
+                event.widget['text'] = 'Автообновление: ВЫКЛ'
+
+        btn.bind('<Button-1>', change_text)
+        btn.grid(row=4, columnspan=4)
+
         self.ls_of_buttons.append(btn)
         label.grid(row=2, columnspan=4)
 
