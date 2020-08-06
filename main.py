@@ -96,7 +96,7 @@ def every_parsing():
     if not html.ok:
         return
 
-    file.write_data((get_circulations(html.text)[0], 1), 'Архив')
+    file.write_data((get_circulations(html.text), 1), 'Архив')
 
 
 def get_static(needed: int, label, ls_of_buttons):

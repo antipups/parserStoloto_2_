@@ -9,9 +9,9 @@ class MyApp(Tk):
         self.create_widgets()
 
     def create_widgets(self):
-        self.ls_of_buttons = []
         btn = Button(text='Перепарсить',
                      font=('Ubuntu', 15))
+        self.ls_of_buttons = [btn, ]
         label = Label(text='', font=('Ubuntu', 15))
 
         def parse(event):
@@ -23,6 +23,7 @@ class MyApp(Tk):
         btn.grid(row=0, columnspan=4)
 
         btn = Button(text='Автообновление: ВЫКЛ',
+                     font=('Ubuntu', 10),
                      command=start_thread)
 
         def change_text(event):

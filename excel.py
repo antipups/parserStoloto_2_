@@ -60,14 +60,18 @@ class ExcelFile:
         """
         if table == 'Архив' and len(data) == 2:
             data = data[0]
-            if self.wb[table].cell(13, 1).value == data[0]:
-                return
-            self.wb[table].insert_rows(13, 1)
-            row, column = 13, 1
-            for value in (data + (sum(data[1:]),)):
-                self.wb[table].cell(row, column, value)
-                column += 1
-            self.read_old_static()
+            if int(self.wb[table].cell(13, 1).value) < data[0][0]:
+                last_code = int(self.wb[table].cell(13, 1).value)
+                self.wb[table].insert_rows(13, data[0][0] - last_code)
+                row, column = 13, 1
+                data = data[:data[0][0] - last_code]
+                for one_data in data:
+                    for value in (one_data + (sum(one_data[1:]),)):
+                        self.wb[table].cell(row, column, value)
+                        column += 1
+                    row += 1
+                    column = 1
+                self.read_old_static()
         else:
             for circulation in data:
                 self.wb[table].append(circulation + (sum(circulation[1:]),))
