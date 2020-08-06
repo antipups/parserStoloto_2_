@@ -1,4 +1,5 @@
-from os import path
+import zipfile
+from os import path, remove
 from time import sleep
 from openpyxl import load_workbook, Workbook
 from openpyxl.styles import Color, PatternFill, Font, Side, Border, Alignment
@@ -9,28 +10,35 @@ import calculate
 class ExcelFile:
 
     def __init__(self):
-        self.wb = self.create_file()
+        self.wb = self.create_file(False)
         self.save()
 
-    def create_file(self) -> Workbook:
-        if path.exists(path.abspath(RESULT_FILE_NAME)):
-            wb = load_workbook(path.abspath(RESULT_FILE_NAME))
-        else:
-            wb = Workbook()
-            for name in ('Архив', 'Отфильтрованные записи'):
-                wb.create_sheet(name)
+    def create_file(self, new: bool) -> Workbook:
+        if new:
+            if path.exists(path.abspath(RESULT_FILE_NAME)):
+                remove(path.abspath(RESULT_FILE_NAME))
+        elif path.exists(path.abspath(RESULT_FILE_NAME)):
+            try:
+                wb = load_workbook(path.abspath(RESULT_FILE_NAME))
+                return wb
+            except zipfile.BadZipFile:
+                print('Файл поврежден, пересоздаю файл')
 
-                for row in range(1, 8, 2):
-                    for column, (name_col, color) in enumerate(zip(tuple(DICT_OF_NAME_COLUMNS.get(row) + title for title in COLUMNS), COLORS), start=1):
-                        cell = wb[name].cell(row, column, name_col)
-                        cell.alignment = Alignment(wrapText=True, horizontal='center')
-                        self.cell_decorate(cell, color, {'size': 10})
+        wb = Workbook()
+        for name in ('Архив', 'Отфильтрованные записи'):
+            wb.create_sheet(name)
 
-                for _ in range(4):
-                    wb[name].append(('',))
+            for row in range(1, 8, 2):
+                for column, (name_col, color) in enumerate(zip(tuple(DICT_OF_NAME_COLUMNS.get(row) + title for title in COLUMNS), COLORS), start=1):
+                    cell = wb[name].cell(row, column, name_col)
+                    cell.alignment = Alignment(wrapText=True, horizontal='center')
+                    self.cell_decorate(cell, color, {'size': 10})
 
-                wb[name].append(('Тираж', *(x for x in range(1, 13)), 'Сумма'))
-            wb.remove(wb['Sheet'])
+            for _ in range(4):
+                wb[name].append(('',))
+
+            wb[name].append(('Тираж', *(x for x in range(1, 13)), 'Сумма'))
+        wb.remove(wb['Sheet'])
         return wb
 
     def save(self):
@@ -51,10 +59,10 @@ class ExcelFile:
         :param data: number_of_circl + tuple a numbers
         :return:
         """
-        if table == 'Архив':
+        if table == 'Архив' and len(data) == 2:
+            data = data[0]
             if self.wb[table].cell(13, 1).value == data[0]:
                 return
-
             self.wb[table].insert_rows(13, 1)
             row, column = 13, 1
             for value in (data + (sum(data[1:]),)):
@@ -89,6 +97,7 @@ class ExcelFile:
 
     def clear_filter(self):
         self.wb['Отфильтрованные записи'].delete_rows(13, 5000)
+        self.save()
 
     def read_old_static(self):
         row = 13
@@ -98,9 +107,27 @@ class ExcelFile:
             row += 1
         self.write_statistics(tuple(sums), 'Архив')
 
+    def make_static(self, needed: int):
+        row, column = 13, 1
+        list_of_sum = []
+        while needed and self.wb['Архив'].cell(row, column).value:
+            sum_ = self.wb['Архив'].cell(row, column).value
+            self.wb['Отфильтрованные записи'].cell(row, column, sum_)
+            if column == 14:
+                list_of_sum.append(sum_)
+                column = 1
+                row += 1
+                needed -= 1
+            else:
+                column += 1
+        self.write_statistics(tuple(list_of_sum), 'Отфильтрованные записи')
+
+    def close(self):
+        self.wb.close()
+
 
 def main():
-    excel = ExcelFile()
+    pass
 
 
 if __name__ == '__main__':

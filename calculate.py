@@ -46,7 +46,7 @@ class Calculator:
 
 if __name__ == '__main__':
     with open('test.txt', 'r') as f:
-        print(Calculator(eval(f.read())).second_dict_answer)
+        print(Calculator(eval(f.read())).first_dict_answer)
     # tuple_ = (
     #     (True, tuple(x for x in range(5))),
     #     (False, tuple(x for x in range(7))),
